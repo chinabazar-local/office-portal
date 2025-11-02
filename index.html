@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Office Portal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Office Portal</h1>
+  <div class="tabs">
+    <button class="tab-button" onclick="showTab('clock')">Clock In / Out</button>
+    <button class="tab-button" onclick="showTab('leave')">Leave Application</button>
+  </div>
+
+  <!-- Clock In/Out -->
+  <div id="clock" class="tab-content">
+    <h2>Clock In / Out</h2>
+    <form id="clockForm">
+      <input name="name" placeholder="Your Name" required>
+      <input type="time" name="clockIn" required>
+      <input type="time" name="clockOut">
+      <button type="submit">Submit</button>
+    </form>
+    <p id="clockResponse"></p>
+  </div>
+
+  <!-- Leave Application -->
+  <div id="leave" class="tab-content" style="display:none">
+    <h2>Leave Application</h2>
+    <form id="leaveForm">
+      <input name="name" placeholder="Your Name" required>
+      <label>From: <input type="date" name="fromDate" required></label>
+      <label>To: <input type="date" name="toDate" required></label>
+      <input name="reason" placeholder="Reason for Leave" required>
+      <button type="submit">Apply</button>
+    </form>
+    <p id="leaveResponse"></p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
