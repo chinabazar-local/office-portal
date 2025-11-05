@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Leave Request</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <a class="back" href="/">← Home</a>
+      <nav class="tabs">
+        <button id="tab-form" class="tab active">Form</button>
+        <button id="tab-dash" class="tab">Dashboard</button>
+      </nav>
+    </header>
+
+    <main class="frame-wrap">
+      <iframe id="gsFrame" class="frame" title="Leave Request"></iframe>
+    </main>
+
+    <script>
+      // 1) PASTE your Apps Script Web App URL (must end with /exec)
+      const APPS_SCRIPT_URL = "https://script.google.com/macros/s/PASTE_YOUR_EXEC_URL/exec";
+
+      const $frame = document.getElementById("gsFrame");
+      const $form  = document.getElementById("tab-form");
+      const $dash  = document.getElementById("tab-dash");
+
+      function setActive(btn){
+        document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+      function load(view){
+        $frame.src = view === "dashboard"
+          ? `${APPS_SCRIPT_URL}?view=dashboard`
+          : APPS_SCRIPT_URL;
+      }
+
+      // default view
+      load("form");
+      $form.addEventListener("click", ()=>{ setActive($form); load("form"); });
+      $dash.addEventListener("click", ()=>{ setActive($dash); load("dashboard"); });
+    </script>
+  </body>
+</html>
