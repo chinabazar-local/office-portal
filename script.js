@@ -3,6 +3,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Gfc3JhMfTl4U
 
 // Elements
 const $time = document.getElementById("live-time");
+const $ampm = document.getElementById("ampm");
 const $today = document.getElementById("today");
 const $employee = document.getElementById("employee");
 const $btnIn = document.getElementById("btn-in");
@@ -12,26 +13,32 @@ const $status = document.getElementById("status");
 // Live KTM date/time
 function tick() {
   const now = new Date();
-  $time.textContent = new Intl.DateTimeFormat("en-GB", {
-    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Asia/Kathmandu"
-  }).format(now);
+  const timeFmt = new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kathmandu"
+  }).formatToParts(now);
+
+  const hhmmss = timeFmt.filter(p => ["hour","minute","second"].includes(p.type))
+                        .map(p => p.value.padStart(2,"0"))
+                        .join(":");
+  const ampm = timeFmt.find(p => p.type === "dayPeriod")?.value?.toUpperCase() || "";
+
+  $time.textContent = hhmmss;
+  $ampm.textContent = " " + ampm;
+
   $today.textContent = new Intl.DateTimeFormat("en-GB", {
     weekday: "long", month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Kathmandu"
   }).format(now);
 }
 tick(); setInterval(tick, 1000);
 
-// Load employees
+// Load employees (Employee!A1:A, skip header)
 async function loadEmployees() {
+  // Keep the placeholder first
+  $employee.innerHTML = `<option value="" selected disabled>Choose your name</option>`;
   try {
     const r = await fetch(APPS_SCRIPT_URL, { method: "GET", cache: "no-store" });
     const data = await r.json();
     const list = (data.employees || []).filter(Boolean);
-    $employee.innerHTML = "";
-    if (list.length === 0) {
-      $employee.innerHTML = `<option>No employees found</option>`;
-      return;
-    }
     for (const name of list) {
       const opt = document.createElement("option");
       opt.value = name; opt.textContent = name;
@@ -39,7 +46,6 @@ async function loadEmployees() {
     }
   } catch (e) {
     console.error(e);
-    $employee.innerHTML = `<option>Failed to load</option>`;
     $status.textContent = "Could not load employees.";
   }
 }
@@ -55,11 +61,12 @@ function getLocation() {
   });
 }
 
-// Send event (CORS-safe POST using text/plain)
+// Submit event (CORS-safe POST using text/plain)
 async function submitEvent(event) {
   const employee = $employee.value;
-  if (!employee || employee === "Loading…") {
-    $status.textContent = "Please select an employee.";
+  if (!employee) {
+    $status.textContent = "Please choose your name first.";
+    $employee.focus();
     return;
   }
 
@@ -70,7 +77,7 @@ async function submitEvent(event) {
     const loc = await getLocation();
     const res = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" }, // simple request → no preflight
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         employee,
         event,         // "CLOCK_IN" | "CLOCK_OUT"
@@ -82,9 +89,9 @@ async function submitEvent(event) {
     const json = await res.json();
     if (!res.ok || json.ok === false) throw new Error(json.error || "Failed");
 
-    // Thank you + clear
+    // Thank you + clear selection back to placeholder
     $status.textContent = `Thank you for ${event === "CLOCK_IN" ? "Clocking In" : "Clocking Out"}.`;
-    if ($employee.options.length > 0) $employee.selectedIndex = 0;
+    $employee.selectedIndex = 0; // reset to "Choose your name"
   } catch (e) {
     console.error(e);
     $status.textContent = "Error: " + e.message;
