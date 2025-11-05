@@ -2,25 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Employee Clock In/Out App</title>
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <!-- Header -->
     <header class="header">
       <div class="brand">
-        <!-- Optional tiny logo placeholder -->
         <div class="logo">⏱</div>
         <div class="brand-text">
           <h1>Employee Clock In/Out App</h1>
           <p class="subtitle">Choose your name and click the respective button.</p>
         </div>
       </div>
-      <div id="today" class="today"></div>
+
+      <!-- NEW module buttons -->
+      <nav class="modules">
+        <a class="chip chip-active" href="/">Clock In/Out</a>
+        <a class="chip" href="/leave-request">Leave Request</a>
+      </nav>
     </header>
 
-    <!-- Card -->
+    <!-- Main card (unchanged content below this line) -->
     <main class="card">
       <!-- Live clock area -->
       <section class="dial-wrap">
@@ -55,7 +59,6 @@
     </main>
 
     <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
-
-    <script src="./script.js"></script>
+    <script src="/script.js"></script>
   </body>
 </html>
