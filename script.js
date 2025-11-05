@@ -1,6 +1,7 @@
-// Replace with your Apps Script Web App URL (/exec)
+// 1) Paste your Apps Script Web App URL (must end with /exec and be HTTPS)
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Gfc3JhMfTl4U6QSp81FnTGNRxksL17dSzsxY0OJz3qBpTbQONpevulpat7HFI6G-/exec";
 
+// Elements
 const $time = document.getElementById("live-time");
 const $today = document.getElementById("today");
 const $employee = document.getElementById("employee");
@@ -8,17 +9,19 @@ const $btnIn = document.getElementById("btn-in");
 const $btnOut = document.getElementById("btn-out");
 const $status = document.getElementById("status");
 
-// ---- Live KTM date/time ----
+// Live KTM date/time
 function tick() {
-  const optsTime = { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Asia/Kathmandu" };
-  const optsDate = { weekday: "long", month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Kathmandu" };
   const now = new Date();
-  $time.textContent = new Intl.DateTimeFormat("en-GB", optsTime).format(now);
-  $today.textContent = new Intl.DateTimeFormat("en-GB", optsDate).format(now);
+  $time.textContent = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Asia/Kathmandu"
+  }).format(now);
+  $today.textContent = new Intl.DateTimeFormat("en-GB", {
+    weekday: "long", month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Kathmandu"
+  }).format(now);
 }
 tick(); setInterval(tick, 1000);
 
-// ---- Load employees from Sheet (Employee!A1:A, skipping header) ----
+// Load employees
 async function loadEmployees() {
   try {
     const r = await fetch(APPS_SCRIPT_URL, { method: "GET", cache: "no-store" });
@@ -42,7 +45,7 @@ async function loadEmployees() {
 }
 loadEmployees();
 
-// ---- Geolocation helper (best-effort) ----
+// Geolocation (best-effort)
 function getLocation() {
   return new Promise((resolve) => {
     if (!navigator.geolocation) return resolve({ lat: "", lng: "" });
@@ -52,7 +55,7 @@ function getLocation() {
   });
 }
 
-// ---- Submit event ----
+// Send event (CORS-safe POST using text/plain)
 async function submitEvent(event) {
   const employee = $employee.value;
   if (!employee || employee === "Loading…") {
@@ -67,10 +70,10 @@ async function submitEvent(event) {
     const loc = await getLocation();
     const res = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // simple request → no preflight
       body: JSON.stringify({
         employee,
-        event,      // "CLOCK_IN" | "CLOCK_OUT"
+        event,         // "CLOCK_IN" | "CLOCK_OUT"
         lat: loc.lat,
         lng: loc.lng,
         ua: navigator.userAgent
@@ -79,9 +82,8 @@ async function submitEvent(event) {
     const json = await res.json();
     if (!res.ok || json.ok === false) throw new Error(json.error || "Failed");
 
-    // Thank you message + reset
+    // Thank you + clear
     $status.textContent = `Thank you for ${event === "CLOCK_IN" ? "Clocking In" : "Clocking Out"}.`;
-    // Reset selection to first employee (or keep as-is if you prefer)
     if ($employee.options.length > 0) $employee.selectedIndex = 0;
   } catch (e) {
     console.error(e);
