@@ -4,10 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Leave Request</title>
-    <!-- Reuse the same global stylesheet -->
     <link rel="stylesheet" href="/style.css" />
     <style>
-      /* page-specific: iframe frame matches .card width and style */
       .frame-wrap {
         border-radius: 18px; overflow: hidden;
         border: 1px solid #e6edf7; background: #fff;
@@ -23,7 +21,6 @@
     </style>
   </head>
   <body>
-    <!-- Shared header -->
     <header class="header">
       <div class="brand">
         <div class="logo">⏱</div>
@@ -38,7 +35,6 @@
       </nav>
     </header>
 
-    <!-- Same-width card as the clock page -->
     <main class="card">
       <div class="title-row">
         <h2 class="title">Leave Request</h2>
@@ -46,39 +42,15 @@
       </div>
 
       <div class="frame-wrap">
-<iframe
-  class="frame"
-  id="gsFrame"
-  title="Leave Request Form"
-  src="https://script.google.com/macros/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec"
-  allow="geolocation https://script.google.com https://script.googleusercontent.com"
-  referrerpolicy="no-referrer-when-downgrade"
-  loading="lazy"
-></iframe>
-        <script>
-(async () => {
-  // Best-effort: get coords in the parent and pass to the iframe via URL params
-  function getLoc() {
-    return new Promise((res, rej) => {
-      if (!navigator.geolocation) return rej();
-      navigator.geolocation.getCurrentPosition(
-        p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        rej,
-        { enableHighAccuracy: true, timeout: 7000 }
-      );
-    });
-  }
-  try {
-    const { lat, lng } = await getLoc();
-    const f = document.getElementById("gsFrame");
-    const u = new URL(f.src);
-    u.searchParams.set("pf_lat", lat.toFixed(6));
-    u.searchParams.set("pf_lng", lng.toFixed(6));
-    // Only update if params not already present
-    if (!f.src.includes("pf_lat")) f.src = u.toString();
-  } catch (_) {}
-})();
-</script>
+        <iframe
+          id="gsFrame"
+          class="frame"
+          title="Leave Request Form"
+          src="https://script.google.com/macros/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec"
+          allow="geolocation https://script.google.com https://script.googleusercontent.com"
+          referrerpolicy="no-referrer-when-downgrade"
+          loading="lazy"
+        ></iframe>
       </div>
 
       <p class="fallback">
@@ -90,8 +62,30 @@
     <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
 
     <script>
-      const iframe = document.querySelector(".frame");
-      document.getElementById("openDirect").href = iframe.src;
+      // keep direct link in sync
+      const f = document.getElementById("gsFrame");
+      document.getElementById("openDirect").href = f.src;
+
+      // Parent-side geolocation fallback → pass to Apps Script as pf_lat/pf_lng
+      (async () => {
+        function getLoc() {
+          return new Promise((res, rej) => {
+            if (!navigator.geolocation) return rej();
+            navigator.geolocation.getCurrentPosition(
+              p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
+              rej,
+              { enableHighAccuracy: true, timeout: 7000 }
+            );
+          });
+        }
+        try {
+          const { lat, lng } = await getLoc();
+          const u = new URL(f.src);
+          u.searchParams.set("pf_lat", lat.toFixed(6));
+          u.searchParams.set("pf_lng", lng.toFixed(6));
+          if (!f.src.includes("pf_lat")) f.src = u.toString();
+        } catch (_) {}
+      })();
     </script>
   </body>
 </html>
