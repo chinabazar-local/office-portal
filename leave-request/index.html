@@ -55,6 +55,30 @@
   referrerpolicy="no-referrer-when-downgrade"
   loading="lazy"
 ></iframe>
+        <script>
+(async () => {
+  // Best-effort: get coords in the parent and pass to the iframe via URL params
+  function getLoc() {
+    return new Promise((res, rej) => {
+      if (!navigator.geolocation) return rej();
+      navigator.geolocation.getCurrentPosition(
+        p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
+        rej,
+        { enableHighAccuracy: true, timeout: 7000 }
+      );
+    });
+  }
+  try {
+    const { lat, lng } = await getLoc();
+    const f = document.getElementById("gsFrame");
+    const u = new URL(f.src);
+    u.searchParams.set("pf_lat", lat.toFixed(6));
+    u.searchParams.set("pf_lng", lng.toFixed(6));
+    // Only update if params not already present
+    if (!f.src.includes("pf_lat")) f.src = u.toString();
+  } catch (_) {}
+})();
+</script>
       </div>
 
       <p class="fallback">
