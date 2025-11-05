@@ -1,57 +1,60 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Leave Request</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Leave Request</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <!-- Header (same vibe as Clock In/Out) -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo">⏱</div>
+        <div class="brand-text">
+          <h1>Employee Portal</h1>
+          <p class="subtitle">Choose a module</p>
+        </div>
+      </div>
 
-  <style>
-    body {
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;
-      background:#f6f9fc;
-      color:#0f172a;
-    }
-    header {
-      padding:14px 18px;
-      display:flex;
-      align-items:center;
-      gap:14px;
-      background:#fff;
-      border-bottom:1px solid #e5eaf2;
-      position:sticky;
-      top:0;
-      z-index:10;
-    }
-    a.home {
-      font-weight:600;
-      color:#0077cc;
-      text-decoration:none;
-    }
-    .frame-wrap {
-      height: calc(100vh - 58px);
-    }
-    iframe {
-      width:100%;
-      height:100%;
-      border:0;
-      background:white;
-    }
-  </style>
-</head>
-<body>
+      <!-- Module switcher -->
+      <nav class="modules">
+        <a class="chip" href="/">Clock In/Out</a>
+        <a class="chip active" href="/leave-request">Leave Request</a>
+      </nav>
+    </header>
 
-  <header>
-    <a href="/" class="home">← Home</a>
-    <h2 style="margin:0;font-size:1.1rem;">Leave Request</h2>
-  </header>
+    <!-- Card with embedded Apps Script form -->
+    <main class="card">
+      <div class="title-row">
+        <h2 class="title">Leave Request</h2>
+        <span class="muted">Kathmandu time</span>
+      </div>
 
-  <main class="frame-wrap">
-    <iframe
-      src="https://script.google.com/a/macros/chinabazar.com/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec"
-      title="Leave Form">
-    </iframe>
-  </main>
+      <div class="frame-wrap">
+        <!-- 🔗 paste your Apps Script Web App URL here (must end with /exec) -->
+        <iframe
+          class="frame"
+          title="Leave Request Form"
+          src="https://script.google.com/a/macros/chinabazar.com/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec"
+          referrerpolicy="no-referrer-when-downgrade"
+          loading="lazy"
+        ></iframe>
+      </div>
 
-</body>
+      <!-- Fallback open-in-new-tab link -->
+      <p class="fallback">
+        Having trouble loading?&nbsp;
+        <a id="openDirect" target="_blank" rel="noopener">Open form in new tab ↗</a>
+      </p>
+    </main>
+
+    <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
+
+    <script>
+      // keep the direct link in sync with the iframe src
+      const iframe = document.querySelector(".frame");
+      document.getElementById("openDirect").href = iframe.src;
+    </script>
+  </body>
 </html>
