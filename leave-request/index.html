@@ -4,10 +4,26 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Leave Request</title>
-    <link rel="stylesheet" href="./style.css" />
+    <!-- Reuse the same global stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      /* page-specific: iframe frame matches .card width and style */
+      .frame-wrap {
+        border-radius: 18px; overflow: hidden;
+        border: 1px solid #e6edf7; background: #fff;
+        min-height: min(78vh, 1200px);
+      }
+      .frame { width:100%; height: calc(min(78vh, 1200px)); border:0; background:#fff; }
+      .title-row { display:flex; align-items:baseline; gap:10px; margin: 4px 4px 12px; }
+      .title { margin:0; font-size:20px; font-weight:900; letter-spacing:.3px; }
+      .muted { color:#64748b; font-size:12px; }
+      .fallback { margin:10px 6px 0; color:#64748b; font-size:13px; }
+      .fallback a { color:#0ea5b7; font-weight:700; text-decoration:none; }
+      .fallback a:hover { text-decoration:underline; }
+    </style>
   </head>
   <body>
-    <!-- Header (same vibe as Clock In/Out) -->
+    <!-- Shared header -->
     <header class="header">
       <div class="brand">
         <div class="logo">⏱</div>
@@ -16,15 +32,13 @@
           <p class="subtitle">Choose a module</p>
         </div>
       </div>
-
-      <!-- Module switcher -->
       <nav class="modules">
         <a class="chip" href="/">Clock In/Out</a>
-        <a class="chip active" href="/leave-request">Leave Request</a>
+        <a class="chip chip-active" href="/leave-request">Leave Request</a>
       </nav>
     </header>
 
-    <!-- Card with embedded Apps Script form -->
+    <!-- Same-width card as the clock page -->
     <main class="card">
       <div class="title-row">
         <h2 class="title">Leave Request</h2>
@@ -32,17 +46,15 @@
       </div>
 
       <div class="frame-wrap">
-        <!-- 🔗 paste your Apps Script Web App URL here (must end with /exec) -->
         <iframe
           class="frame"
           title="Leave Request Form"
-          src="https://script.google.com/a/macros/chinabazar.com/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec"
+          src="https://script.google.com/macros/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec"
           referrerpolicy="no-referrer-when-downgrade"
           loading="lazy"
         ></iframe>
       </div>
 
-      <!-- Fallback open-in-new-tab link -->
       <p class="fallback">
         Having trouble loading?&nbsp;
         <a id="openDirect" target="_blank" rel="noopener">Open form in new tab ↗</a>
@@ -52,7 +64,6 @@
     <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
 
     <script>
-      // keep the direct link in sync with the iframe src
       const iframe = document.querySelector(".frame");
       document.getElementById("openDirect").href = iframe.src;
     </script>
