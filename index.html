@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Employee Clock In/Out App</title>
+    <!-- use a RELATIVE path so it always loads -->
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
@@ -17,16 +18,16 @@
         </div>
       </div>
 
-      <!-- NEW module buttons -->
+      <!-- Module buttons -->
       <nav class="modules">
         <a class="chip chip-active" href="/">Clock In/Out</a>
         <a class="chip" href="/leave-request">Leave Request</a>
       </nav>
     </header>
 
-    <!-- Main card (unchanged content below this line) -->
+    <!-- Main card -->
     <main class="card">
-      <!-- Live clock area -->
+      <!-- Live clock -->
       <section class="dial-wrap">
         <div class="dial">
           <div class="dial-inner">
@@ -37,7 +38,7 @@
         <div class="hint">Kathmandu time (live)</div>
       </section>
 
-      <!-- Employee dropdown -->
+      <!-- Employee -->
       <label class="label" for="employee">Employee</label>
       <select id="employee" class="select">
         <option value="" selected disabled>Choose your name</option>
@@ -46,19 +47,20 @@
       <!-- Buttons -->
       <div class="btns">
         <button id="btn-in"  class="btn btn-in">
-          <span>Clock In</span>
-          <span class="btn-ico">🕘</span>
+          <span>Clock In</span><span class="btn-ico">🕘</span>
         </button>
         <button id="btn-out" class="btn btn-out">
-          <span>Clock Out</span>
-          <span class="btn-ico">🕙</span>
+          <span>Clock Out</span><span class="btn-ico">🕙</span>
         </button>
       </div>
 
+      <!-- Visible error/status line -->
       <p id="status" class="status"></p>
     </main>
 
     <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
-    <script src="/script.js"></script>
+
+    <!-- use RELATIVE path + DEFER so JS always runs after HTML is parsed -->
+    <script src="./script.js" defer></script>
   </body>
 </html>
