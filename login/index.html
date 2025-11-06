@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Employee Login</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .login-card{max-width:560px;margin:40px auto;background:#fff;border:1px solid #e8eef6;border-radius:20px;padding:22px;box-shadow:0 10px 30px rgba(45,110,173,.08)}
+    .row{display:grid;gap:8px;margin:10px 0}
+    .input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #e3eaf4;background:#fbfdff;font-weight:600}
+    .toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#64748b}
+    .rel{position:relative}
+    .actions{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+    .btn-primary{padding:12px 18px;border:0;border-radius:999px;background:#0f172a;color:#fff;font-weight:900}
+    .muted{color:#6b7280;font-size:12px}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="brand"><div class="logo">⏱</div><div class="brand-text"><h1>Employee Portal</h1><p class="subtitle">Sign in to continue</p></div></div>
+  </header>
+
+  <main class="login-card">
+    <div class="row"><label>Username</label><input id="u" class="input" autocomplete="username" /></div>
+    <div class="row rel"><label>Password</label>
+      <input id="p" class="input" type="password" autocomplete="current-password" />
+      <span id="sh" class="toggle">👁</span>
+    </div>
+    <div class="actions">
+      <label class="muted"><input id="rm" type="checkbox" checked /> Remember me (30 days)</label>
+      <button id="loginBtn" class="btn-primary">Login</button>
+    </div>
+    <div id="err" class="muted" style="margin-top:8px;color:#b91c1c"></div>
+  </main>
+
+  <script type="module" src="/script_login.js"></script>
+</body>
+</html>
