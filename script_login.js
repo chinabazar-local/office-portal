@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymYW5sH9x-IJO_KoZfSi9ZLi9izXvB8Q9IJj4K8yXpDqWZKOWoMebATLX_yv9L8bZZFA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw210-ui_G8-sZOTbrmgX8FEqfcRoe17jRJRDVl8hxoHnxcifcPX-FnMIkZhEnqDLBT/exec';
 
 const $ = s => document.querySelector(s);
 $('#sh').addEventListener('click', ()=> {
