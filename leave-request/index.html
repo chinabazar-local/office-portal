@@ -1,91 +1,75 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Leave Request</title>
-    <link rel="stylesheet" href="/style.css" />
-    <style>
-      .frame-wrap {
-        border-radius: 18px; overflow: hidden;
-        border: 1px solid #e6edf7; background: #fff;
-        min-height: min(78vh, 1200px);
-      }
-      .frame { width:100%; height: calc(min(78vh, 1200px)); border:0; background:#fff; }
-      .title-row { display:flex; align-items:baseline; gap:10px; margin: 4px 4px 12px; }
-      .title { margin:0; font-size:20px; font-weight:900; letter-spacing:.3px; }
-      .muted { color:#64748b; font-size:12px; }
-      .fallback { margin:10px 6px 0; color:#64748b; font-size:13px; }
-      .fallback a { color:#0ea5b7; font-weight:700; text-decoration:none; }
-      .fallback a:hover { text-decoration:underline; }
-    </style>
-  </head>
-  <body>
-    <header class="header">
-      <div class="brand">
-        <div class="logo">⏱</div>
-        <div class="brand-text">
-          <h1>Employee Portal</h1>
-          <p class="subtitle">Choose a module</p>
-        </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Leave Request</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .frame-wrap{border-radius:18px;overflow:hidden;border:1px solid #e6edf7;background:#fff;min-height:min(78vh,1200px)}
+    .frame{width:100%;height:calc(min(78vh,1200px));border:0;background:#fff}
+    .title-row{display:flex;align-items:baseline;gap:10px;margin:4px 4px 12px}
+    .title{margin:0;font-size:20px;font-weight:900;letter-spacing:.3px}
+    .muted{color:#64748b;font-size:12px}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="brand">
+      <div class="logo">⏱</div>
+      <div class="brand-text">
+        <h1>Employee Portal</h1>
+        <p class="subtitle">Leave Request</p>
       </div>
-      <nav class="modules">
-        <a class="chip" href="/">Clock In/Out</a>
-        <a class="chip chip-active" href="/leave-request">Leave Request</a>
-      </nav>
-    </header>
+    </div>
+    <nav class="modules">
+      <a class="chip" href="/">Clock In/Out</a>
+      <a class="chip chip-active" href="/leave-request">Leave Request</a>
+      <a class="chip" href="#" id="logoutBtn">Logout</a>
+    </nav>
+  </header>
 
-    <main class="card">
-      <div class="title-row">
-        <h2 class="title">Leave Request</h2>
-        <span class="muted">Kathmandu time</span>
-      </div>
+  <main class="card">
+    <div class="title-row">
+      <h2 class="title">Leave Request</h2>
+      <span class="muted">Kathmandu time</span>
+    </div>
 
-      <div class="frame-wrap">
-        <iframe
-          id="gsFrame"
-          class="frame"
-          title="Leave Request Form"
-          src="https://script.google.com/macros/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec"
-          allow="geolocation https://script.google.com https://script.googleusercontent.com"
-          referrerpolicy="no-referrer-when-downgrade"
-          loading="lazy"
-        ></iframe>
-      </div>
+    <div class="frame-wrap">
+      <iframe id="gsFrame" class="frame" title="Leave Request Form"
+        src="" allow="geolocation https://script.google.com https://script.googleusercontent.com"
+        referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
+    </div>
+  </main>
 
-      <p class="fallback">
-        Having trouble loading?&nbsp;
-        <a id="openDirect" target="_blank" rel="noopener">Open form in new tab ↗</a>
-      </p>
-    </main>
+  <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
 
-    <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
+  <script>
+    const APPS_SCRIPT_FORM_URL = 'PASTE_YOUR_LEAVE_FORM_EXEC_URL'; // the Apps Script "Leave" /exec
+    const TZ='Asia/Kathmandu';
+    const name = localStorage.getItem('employeeName');
+    const exp  = +localStorage.getItem('loginExpiry')||0;
+    if(!name || Date.now()>exp){ location.href='/login'; }
 
-    <script>
-      // keep direct link in sync
-      const f = document.getElementById("gsFrame");
-      document.getElementById("openDirect").href = f.src;
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.clear(); location.href='/login'; });
 
-      // Parent-side geolocation fallback → pass to Apps Script as pf_lat/pf_lng
-      (async () => {
-        function getLoc() {
-          return new Promise((res, rej) => {
-            if (!navigator.geolocation) return rej();
-            navigator.geolocation.getCurrentPosition(
-              p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
-              rej,
-              { enableHighAccuracy: true, timeout: 7000 }
-            );
-          });
-        }
-        try {
-          const { lat, lng } = await getLoc();
-          const u = new URL(f.src);
-          u.searchParams.set("pf_lat", lat.toFixed(6));
-          u.searchParams.set("pf_lng", lng.toFixed(6));
-          if (!f.src.includes("pf_lat")) f.src = u.toString();
-        } catch (_) {}
-      })();
-    </script>
-  </body>
+    // Parent geolocation fallback
+    (async () => {
+      const f = document.getElementById('gsFrame');
+      const withParams = new URL(APPS_SCRIPT_FORM_URL);
+      withParams.searchParams.set('employee', name);  // lock employee
+      try{
+        const pos = await new Promise((res,rej)=>{
+          if(!navigator.geolocation) return rej();
+          navigator.geolocation.getCurrentPosition(
+            p=>res(p.coords), rej, {enableHighAccuracy:true, timeout:7000}
+          );
+        });
+        withParams.searchParams.set('pf_lat', pos.latitude.toFixed(6));
+        withParams.searchParams.set('pf_lng', pos.longitude.toFixed(6));
+      }catch(_){}
+      f.src = withParams.toString();
+    })();
+  </script>
+</body>
 </html>
