@@ -22,10 +22,11 @@ async function onLogin(){
   if(!username || !password){ $('#err').textContent='Enter username & password'; return; }
 
   try{
-    const r = await fetch(APPS_SCRIPT_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'login', username, password })
-    }).then(r=>r.json());
+const r = await fetch(APPS_SCRIPT_URL, {
+  method: 'POST',
+  // IMPORTANT: no custom headers = no preflight
+  body: JSON.stringify({ action:'login', username, password })
+}).then(r => r.json());
 
     if(!r.ok || !r.data || !r.data.ok) throw new Error(r.data?.error || r.error || 'Login failed');
 
