@@ -1,100 +1,126 @@
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw210-ui_G8-sZOTbrmgX8FEqfcRoe17jRJRDVl8hxoHnxcifcPX-FnMIkZhEnqDLBT/exec';
-const TZ = 'Asia/Kathmandu';
-const $ = s => document.querySelector(s);
+/* ===== Clock page script (drop-in) ===== */
 
-// ---- Session guard ----
-function currentUser(){
-  const name = localStorage.getItem('employeeName');
-  const exp  = +localStorage.getItem('loginExpiry') || 0;
-  if (!name || Date.now() > exp) return null;
-  return name;
-}
-function requireLogin(){
-  const name = currentUser();
-  if (!name){ location.href='/login'; return null; }
-  $('#empNameHead').textContent = name;
-  return name;
-}
-document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); location.href='/login'; });
+/** 1) CONFIG **/
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw210-ui_G8-sZOTbrmgX8FEqfcRoe17jRJRDVl8hxoHnxcifcPX-FnMIkZhEnqDLBT/exec';  // same URL used by login
+const EMP = JSON.parse(localStorage.getItem('cb_user') || '{}'); // {name, username, token...}
+const EMPLOYEE_NAME = EMP && EMP.employeeName ? EMP.employeeName : (EMP.name || ''); // fallback
 
-// ---- Live time ----
-function tick(){
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:TZ}).formatToParts(now);
-  const hhmmss = parts.filter(p=>['hour','minute','second'].includes(p.type)).map(p=>p.value.padStart(2,'0')).join(':');
-  const ap = (parts.find(p=>p.type==='dayPeriod')?.value || '').toUpperCase();
-  $('#live-time').textContent = hhmmss; $('#ampm').textContent=' '+ap;
-}
-setInterval(tick,1000); tick();
+/** 2) DOM refs **/
+const statusLine = document.getElementById('statusLine');
+const sinceLine  = document.getElementById('sinceLine');
+const durLine    = document.getElementById('durLine');
+const errBox     = document.getElementById('errorBox');       // <div id="errorBox">…</div> optional
+const btnIn      = document.getElementById('btnClockIn');
+const btnOut     = document.getElementById('btnClockOut');
 
-// ---- Status & duration ----
-let lastIn=null, state='OUT', durTimer=null;
-function fmtISOtoLocal(iso){
-  if(!iso) return '—';
-  const d = new Date(iso);
-  return new Intl.DateTimeFormat('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit',month:'short',day:'2-digit',timeZone:TZ}).format(d);
+/** 3) Helpers **/
+function showErr(msg){ if(errBox){ errBox.textContent = msg; errBox.style.display='block'; } }
+function clearErr(){ if(errBox){ errBox.textContent = ''; errBox.style.display='none'; } }
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtLocal(ts){
+  try{
+    const d = new Date(ts);
+    return isFinite(d) ? `${d.toLocaleDateString()} ${d.toLocaleTimeString()}` : '—';
+  }catch(_){ return '—'; }
 }
-function renderStatus(){
-  $('#statusLine').textContent = `STATUS: ${state==='IN'?'CLOCKED IN':'CLOCKED OUT'}`;
-  $('#sinceLine').textContent  = `Since: ${state==='IN'?fmtISOtoLocal(lastIn):'—'}`;
-  if (state==='IN' && lastIn){
-    const up = () => {
-      const ms = Date.now() - new Date(lastIn).getTime();
-      const h = Math.floor(ms/3600000), m = Math.floor((ms%3600000)/60000), s = Math.floor((ms%60000)/1000);
-      $('#durLine').textContent = `Duration: ${h}h ${m}m ${s}s`;
+
+/** Simple POST without headers (avoids preflight) **/
+async function api(payload){
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  if(!json.ok) throw new Error(json.error || 'Request failed');
+  return json.data;
+}
+
+/** 4) Status polling + render **/
+let durTimer = null;
+function stopDurTimer(){ if(durTimer){ clearInterval(durTimer); durTimer = null; } }
+
+function renderStatus(data){
+  // expected from backend: { state:'IN'|'OUT', sinceISO:'...', lastISO:'...' }
+  const state = data && data.state ? String(data.state).toUpperCase() : '—';
+  const sinceISO = data && data.sinceISO || null;
+
+  statusLine.textContent = `STATUS: ${state === 'IN' ? 'CLOCKED IN' : (state === 'OUT' ? 'CLOCKED OUT' : '—')}`;
+  sinceLine.textContent  = `Since: ${sinceISO ? fmtLocal(sinceISO) : '—'}`;
+
+  stopDurTimer();
+  if (state === 'IN' && sinceISO){
+    const start = new Date(sinceISO).getTime();
+    const tick = () => {
+      const ms = Date.now() - start;
+      const h = Math.floor(ms/3600000);
+      const m = Math.floor((ms%3600000)/60000);
+      const s = Math.floor((ms%60000)/1000);
+      durLine.textContent = `Duration: ${pad(h)}h ${pad(m)}m ${pad(s)}s`;
     };
-    clearInterval(durTimer); up(); durTimer=setInterval(up,1000);
+    tick();
+    durTimer = setInterval(tick, 1000);
   } else {
-    clearInterval(durTimer); $('#durLine').textContent = 'Duration: —';
+    durLine.textContent = 'Duration: —';
   }
 }
-async function loadStatus(name){
-  const r = await fetch(APPS_SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ action:'status', employeeName:name })
-  }).then(r=>r.json());
-  if(!r.ok) throw new Error(r.error||'status failed');
-  const d = r.data||{};
-  state = d.state || 'OUT';
-  lastIn = d.lastInISO || null;
-  renderStatus();
+
+async function loadStatus(){
+  try{
+    clearErr();
+    const data = await api({ action:'status', employeeName: EMPLOYEE_NAME });
+    renderStatus(data || {});
+  }catch(err){
+    showErr('Failed to fetch status');
+    renderStatus(null);
+  }
 }
 
-// ---- Geolocation (best effort) ----
-function getLocation(){
-  return new Promise((resolve)=> {
-    if (!navigator.geolocation) return resolve({lat:'',lng:''});
+/** 5) Geolocation (best-effort) **/
+function getLocation(timeout=6000){
+  return new Promise((res, rej)=>{
+    if(!navigator.geolocation) return rej(new Error('No geolocation'));
     navigator.geolocation.getCurrentPosition(
-      p=>resolve({lat:p.coords.latitude,lng:p.coords.longitude}),
-      ()=>resolve({lat:'',lng:''}),
-      {enableHighAccuracy:true, timeout:8000}
+      p => res({lat:p.coords.latitude, lng:p.coords.longitude}),
+      _ => rej(new Error('Geo denied')),
+      { enableHighAccuracy:false, maximumAge:60000, timeout }
     );
   });
 }
 
-// ---- Submit clock events ----
-async function submitEvent(kind){
-  const name = currentUser(); if(!name) return;
-  $('#status').textContent='Saving…'; $('#btn-in').disabled=true; $('#btn-out').disabled=true;
+/** 6) Clock actions **/
+async function clock(kind){ // kind: 'CLOCK_IN' | 'CLOCK_OUT'
   try{
-    const loc = await getLocation();
-    const r = await fetch(APPS_SCRIPT_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action:'clock', employeeName:name, event:kind,
-        lat:loc.lat, lng:loc.lng, ua:navigator.userAgent
-      })
-    }).then(r=>r.json());
-    if(!r.ok || !r.data?.ok) throw new Error(r.data?.error||r.error||'Failed');
-    $('#status').textContent = `Thank you for ${kind==='CLOCK_IN'?'Clocking In':'Clocking Out'}.`;
-    await loadStatus(name);
-  }catch(e){
-    $('#status').textContent = 'Error: '+(e.message||e);
+    clearErr();
+    btnIn && (btnIn.disabled = true);
+    btnOut && (btnOut.disabled = true);
+
+    let loc = {lat:null, lng:null};
+    try { loc = await getLocation(); } catch(_){}
+
+    await api({
+      action: 'clock',
+      employeeName: EMPLOYEE_NAME,
+      event: kind,                 // EXACT string expected by backend
+      lat: loc.lat,
+      lng: loc.lng,
+      ua: navigator.userAgent
+    });
+
+    await loadStatus();
+  }catch(err){
+    showErr('Failed to fetch'); // keep same user-facing message you showed
   }finally{
-    $('#btn-in').disabled=false; $('#btn-out').disabled=false;
+    btnIn && (btnIn.disabled = false);
+    btnOut && (btnOut.disabled = false);
   }
 }
 
-// ---- Bootstrap ----
-const NAME = requireLogin(); if (NAME){ loadStatus(NAME); }
-document.getElementById('btn-in').addEventListener('click', ()=>submitEvent('CLOCK_IN'));
-document.getElementById('btn-out').addEventListener('click',()=>submitEvent('CLOCK_OUT'));
+/** 7) Wire UI **/
+window.addEventListener('DOMContentLoaded', ()=>{
+  // Attach buttons
+  if (btnIn)  btnIn.addEventListener('click',  ()=> clock('CLOCK_IN'));
+  if (btnOut) btnOut.addEventListener('click', ()=> clock('CLOCK_OUT'));
+  // Initial status load
+  loadStatus();
+});
