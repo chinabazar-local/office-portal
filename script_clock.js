@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymYW5sH9x-IJO_KoZfSi9ZLi9izXvB8Q9IJj4K8yXpDqWZKOWoMebATLX_yv9L8bZZFA/exec';
 const TZ = 'Asia/Kathmandu';
 const $ = s => document.querySelector(s);
 
