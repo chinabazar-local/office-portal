@@ -1,66 +1,52 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Employee Clock In/Out App</title>
-    <!-- use a RELATIVE path so it always loads -->
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <!-- Header -->
-    <header class="header">
-      <div class="brand">
-        <div class="logo">⏱</div>
-        <div class="brand-text">
-          <h1>Employee Clock In/Out App</h1>
-          <p class="subtitle">Choose your name and click the respective button.</p>
-        </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Employee Clock In/Out</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="brand">
+      <div class="logo">⏱</div>
+      <div class="brand-text">
+        <h1>Employee Clock In/Out App</h1>
+        <p class="subtitle">You are signed in as <b id="empNameHead">—</b></p>
       </div>
+    </div>
+    <nav class="modules">
+      <a class="chip chip-active" href="/">Clock In/Out</a>
+      <a class="chip" href="/leave-request">Leave Request</a>
+      <a class="chip" href="#" id="logoutBtn">Logout</a>
+    </nav>
+  </header>
 
-      <!-- Module buttons -->
-      <nav class="modules">
-        <a class="chip chip-active" href="/">Clock In/Out</a>
-        <a class="chip" href="/leave-request">Leave Request</a>
-      </nav>
-    </header>
+  <main class="card" style="max-width:960px">
+    <!-- Status card -->
+    <section id="statusCard" style="border:1px solid #e8eef6;border-radius:16px;padding:14px;margin-bottom:14px;background:#f8fbff">
+      <div id="statusLine" style="font-weight:900;margin-bottom:6px">STATUS: —</div>
+      <div id="sinceLine"  style="color:#475569">Since: —</div>
+      <div id="durLine"    style="color:#475569">Duration: —</div>
+    </section>
 
-    <!-- Main card -->
-    <main class="card">
-      <!-- Live clock -->
-      <section class="dial-wrap">
-        <div class="dial">
-          <div class="dial-inner">
-            <span id="live-time" class="dial-time">--:--:--</span>
-            <span id="ampm" class="ampm"></span>
-          </div>
-        </div>
-        <div class="hint">Kathmandu time (live)</div>
-      </section>
+    <!-- Live clock -->
+    <section class="dial-wrap">
+      <div class="dial"><div class="dial-inner"><span id="live-time" class="dial-time">--:--:--</span><span id="ampm" class="ampm"></span></div></div>
+      <div class="hint">Kathmandu time (live)</div>
+    </section>
 
-      <!-- Employee -->
-      <label class="label" for="employee">Employee</label>
-      <select id="employee" class="select">
-        <option value="" selected disabled>Choose your name</option>
-      </select>
+    <!-- Buttons -->
+    <div class="btns">
+      <button id="btn-in"  class="btn btn-in"><span>Clock In</span><span class="btn-ico">🕘</span></button>
+      <button id="btn-out" class="btn btn-out"><span>Clock Out</span><span class="btn-ico">🕙</span></button>
+    </div>
 
-      <!-- Buttons -->
-      <div class="btns">
-        <button id="btn-in"  class="btn btn-in">
-          <span>Clock In</span><span class="btn-ico">🕘</span>
-        </button>
-        <button id="btn-out" class="btn btn-out">
-          <span>Clock Out</span><span class="btn-ico">🕙</span>
-        </button>
-      </div>
+    <p id="status" class="status"></p>
+  </main>
 
-      <!-- Visible error/status line -->
-      <p id="status" class="status"></p>
-    </main>
+  <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
 
-    <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
-
-    <!-- use RELATIVE path + DEFER so JS always runs after HTML is parsed -->
-    <script src="./script.js" defer></script>
-  </body>
+  <script type="module" src="/script_clock.js"></script>
+</body>
 </html>
