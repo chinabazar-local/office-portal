@@ -1,52 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Employee Clock In/Out</title>
-  <link rel="stylesheet" href="/style.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Employee Clock In/Out App</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="header">
+  <!-- Top bar -->
+  <header class="top">
     <div class="brand">
-      <div class="logo">⏱</div>
-      <div class="brand-text">
-        <h1>Employee Clock In/Out App</h1>
-        <p class="subtitle">You are signed in as <b id="empNameHead">—</b></p>
+      <div class="logo">🕒</div>
+      <div>
+        <div class="title">Employee Clock In/Out App</div>
+        <div class="sub">You are signed in as <b id="signedName">—</b></div>
       </div>
     </div>
-    <nav class="modules">
-      <a class="chip chip-active" href="/">Clock In/Out</a>
-      <a class="chip" href="/leave-request">Leave Request</a>
-      <a class="chip" href="#" id="logoutBtn">Logout</a>
+    <nav class="nav">
+      <a class="btn-pill active" href="/">Clock In/Out</a>
+      <a class="btn-pill" id="linkLeave" href="/leave-request">Leave Request</a>
+      <button id="btnLogout" class="btn-pill">Logout</button>
     </nav>
   </header>
 
-  <main class="card" style="max-width:960px">
-    <!-- Status card -->
-    <section id="statusCard" style="border:1px solid #e8eef6;border-radius:16px;padding:14px;margin-bottom:14px;background:#f8fbff">
-      <div id="statusLine" style="font-weight:900;margin-bottom:6px">STATUS: —</div>
-      <div id="sinceLine"  style="color:#475569">Since: —</div>
-      <div id="durLine"    style="color:#475569">Duration: —</div>
+  <!-- Card -->
+  <main class="wrap">
+    <!-- Status card (Style C) -->
+    <section id="statusCard" class="status-card">
+      <div id="statusLine" class="status-strong">STATUS: —</div>
+      <div id="sinceLine"  class="status-sub">Since: —</div>
+      <div id="durLine"    class="status-sub">Duration: —</div>
     </section>
 
-    <!-- Live clock -->
-    <section class="dial-wrap">
-      <div class="dial"><div class="dial-inner"><span id="live-time" class="dial-time">--:--:--</span><span id="ampm" class="ampm"></span></div></div>
-      <div class="hint">Kathmandu time (live)</div>
+    <!-- Clock circle -->
+    <section class="clock-card">
+      <div class="clock-circle">
+        <div id="clockText">--:--:--</div>
+      </div>
+      <div class="clock-sub">Kathmandu time (live)</div>
     </section>
 
     <!-- Buttons -->
-    <div class="btns">
-      <button id="btn-in"  class="btn btn-in"><span>Clock In</span><span class="btn-ico">🕘</span></button>
-      <button id="btn-out" class="btn btn-out"><span>Clock Out</span><span class="btn-ico">🕙</span></button>
-    </div>
+    <section class="actions">
+      <button id="btnClockIn"  class="btn-green">Clock In ⏱</button>
+      <button id="btnClockOut" class="btn-red">Clock Out ⏱</button>
+    </section>
 
-    <p id="status" class="status"></p>
+    <div id="errorBox" class="error" style="display:none"></div>
+    <footer class="foot">Powered by Google Sheets · Nepal (KTM)</footer>
   </main>
 
-  <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
-
-  <script type="module" src="/script_clock.js"></script>
+  <!-- IMPORTANT: only this script -->
+  <script src="script_clock.js" defer></script>
 </body>
 </html>
