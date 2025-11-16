@@ -16,15 +16,20 @@ $('#p').addEventListener('keydown', e => { if (e.key === 'Enter') onLogin(); });
  * Store session exactly how script_clock.js expects it:
  * localStorage["cb_user"] = JSON.stringify({ employeeName, createdAt, expiresAt })
  */
-function setSession(employeeName, remember) {
+function setSession(name, remember){
   const now = Date.now();
-  const ttl = remember ? 30 * 24 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000; // 30d or 12h
+  const ttl = remember ? 30*24*60*60*1000 : 12*60*60*1000; // 30d or 12h
 
-  const session = {
-    employeeName,
-    createdAt: now,
-    expiresAt: now + ttl
-  };
+  // existing keys (used by leave-request wrapper)
+  localStorage.setItem('employeeName', name);
+  localStorage.setItem('loginExpiry', String(now + ttl));
+
+  // new JSON session used by script_clock.js
+  localStorage.setItem('cb_user', JSON.stringify({
+    employeeName: name,
+    exp: now + ttl
+  }));
+}
 
   localStorage.setItem('cb_user', JSON.stringify(session));
 }
