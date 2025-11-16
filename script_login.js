@@ -19,24 +19,23 @@ $("#p")?.addEventListener("keydown", (e) => {
 });
 
 // ==== 2) Session storage ====
+// script_login.js
+
 function setSession(name, username, remember) {
   const now = Date.now();
-  const ttl = remember ? 30 * 24 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000; // 30d or 12h
+  const ttl = remember ? 30*24*60*60*1000 : 12*60*60*1000; // 30d or 12h
   const exp = now + ttl;
 
-  // Old keys (still used by leave-request wrapper)
-  localStorage.setItem("employeeName", name);
-  localStorage.setItem("loginExpiry", String(exp));
+  // Old keys (leave-request wrapper still uses these)
+  localStorage.setItem('employeeName', name);
+  localStorage.setItem('loginExpiry', String(exp));
 
   // New JSON session used by script_clock.js
-  localStorage.setItem(
-    "cb_user",
-    JSON.stringify({
-      employeeName: name,
-      username,
-      exp,
-    })
-  );
+  localStorage.setItem('cb_user', JSON.stringify({
+    employeeName: name,
+    username,
+    exp,
+  }));
 }
 
 // ==== 3) Login handler ====
@@ -78,11 +77,12 @@ async function onLogin() {
       throw new Error(data.error || "Invalid username or password");
     }
 
-    const empName = (data.employeeName || "").trim() || username;
+    // after receiving data from Apps Script
+const empName = (data.employeeName || "").trim() || username;
 
-    // Save session and go to clock page
-    setSession(empName, username, remember);
-    location.href = "/";
+// IMPORTANT: pass username AND remember
+setSession(empName, username, remember);
+location.href = "/";
 
   } catch (err) {
     if (errEl) errEl.textContent = String(err.message || err);
