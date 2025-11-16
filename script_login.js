@@ -1,6 +1,6 @@
 // script_login.js
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfy...8-sZOTbrmgX8FEqfcRoe17jRJRDVl8hxoHnxcifcPX-FnMIkZhEnqDLBT/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby8Gfc3JhMfTl4U6QSp81FnTGNRxksL17dSzsxY0OJz3qBpTbQONpevulpat7HFI6G-/exec';
 
 const $ = s => document.querySelector(s);
 
