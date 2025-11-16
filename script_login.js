@@ -26,11 +26,11 @@ function setSession(name, username, remember) {
   const ttl = remember ? 30*24*60*60*1000 : 12*60*60*1000; // 30d or 12h
   const exp = now + ttl;
 
-  // Old keys (leave-request wrapper still uses these)
+  // Old keys
   localStorage.setItem('employeeName', name);
   localStorage.setItem('loginExpiry', String(exp));
 
-  // New JSON session used by script_clock.js
+  // New JSON session
   localStorage.setItem('cb_user', JSON.stringify({
     employeeName: name,
     username,
@@ -79,8 +79,6 @@ async function onLogin() {
 
     // after receiving data from Apps Script
 const empName = (data.employeeName || "").trim() || username;
-
-// IMPORTANT: pass username AND remember
 setSession(empName, username, remember);
 location.href = "/";
 
