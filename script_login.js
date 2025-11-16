@@ -20,11 +20,11 @@ function setSession(name, remember){
   const now = Date.now();
   const ttl = remember ? 30*24*60*60*1000 : 12*60*60*1000; // 30d or 12h
 
-  // existing keys (used by leave-request wrapper)
+  // old keys (still used by other pages)
   localStorage.setItem('employeeName', name);
   localStorage.setItem('loginExpiry', String(now + ttl));
 
-  // new JSON session used by script_clock.js
+  // new JSON session for script_clock.js
   localStorage.setItem('cb_user', JSON.stringify({
     employeeName: name,
     exp: now + ttl
