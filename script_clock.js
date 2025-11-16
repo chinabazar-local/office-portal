@@ -14,6 +14,11 @@ try {
 } catch (_) {
   SESS = {};
 }
+const EMPLOYEE_NAME =
+  SESS.employeeName ||
+  SESS.name ||
+  localStorage.getItem("employeeName") ||
+  "";
 
 // Prefer cb_user JSON, but fall back to the simpler employeeName key
 const EMPLOYEE_NAME =
