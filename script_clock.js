@@ -1,6 +1,9 @@
 /* ===== CLOCK PAGE SCRIPT (root /) ===== */
 
-/** 1) CONFIG: Clock Apps Script URL */
+/** 1) CONFIG: Clock + Status Apps Script URL
+ *  Use the Web App URL from the *Timesheet Login* Apps Script project
+ *  (the one with SPREADSHEET_ID = '1xpY-_WOp_BAJhpTucnUKnK8doxsRgWgHwPPmP2HoHPw').
+ */
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbw210-ui_G8-sZOTbrmgX8FEqfcRoe17jRJRDVl8hxoHnxcifcPX-FnMIkZhEnqDLBT/exec";
 
@@ -11,7 +14,13 @@ try {
 } catch (_) {
   SESS = {};
 }
-const EMPLOYEE_NAME = SESS.employeeName || SESS.name || "";
+
+// Prefer cb_user JSON, but fall back to the simpler employeeName key
+const EMPLOYEE_NAME =
+  SESS.employeeName ||
+  SESS.name ||
+  localStorage.getItem("employeeName") ||
+  "";
 
 /** 3) DOM refs */
 const signedName = document.getElementById("signedName");
@@ -87,7 +96,7 @@ async function api(payload) {
   if (!res.ok) throw new Error("HTTP " + res.status);
   const json = await res.json();
   if (!json.ok) throw new Error(json.error || "Request failed");
-  return json.data;
+  return json.data;  // for Timesheet Login: {state,lastInISO,lastOutISO} etc.
 }
 
 /** 7) Status rendering + duration timer */
@@ -101,7 +110,14 @@ function stopDurTimer() {
 
 function renderStatus(data) {
   const state = data && data.state ? String(data.state).toUpperCase() : "—";
-  const sinceISO = (data && data.sinceISO) || null;
+
+  // Timesheet Login getStatus() returns { state, lastInISO, lastOutISO }
+  let sinceISO = null;
+  if (state === "IN") {
+    sinceISO = data.lastInISO || null;
+  } else if (state === "OUT") {
+    sinceISO = data.lastOutISO || null;
+  }
 
   statusLine.textContent =
     "STATUS: " +
@@ -226,6 +242,8 @@ window.addEventListener("DOMContentLoaded", () => {
   // Nav: logout
   btnLogout.addEventListener("click", () => {
     localStorage.removeItem("cb_user");
+    localStorage.removeItem("employeeName");
+    localStorage.removeItem("loginExpiry");
     location.href = "/login/";
   });
 
@@ -234,6 +252,6 @@ window.addEventListener("DOMContentLoaded", () => {
   btnOut.addEventListener("click", () => clock("CLOCK_OUT"));
 
   // Start UI
-  startClock();   // <= live time; if this works, we know JS is running
-  loadStatus();   // <= talks to Apps Script
+  startClock();   // live time
+  loadStatus();   // talks to Apps Script
 });
