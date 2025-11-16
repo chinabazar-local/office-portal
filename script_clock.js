@@ -249,12 +249,12 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Nav: logout
-  btnLogout.addEventListener("click", () => {
-    localStorage.removeItem("cb_user");
-    localStorage.removeItem("employeeName");
-    localStorage.removeItem("loginExpiry");
-    location.href = "/login/";
-  });
+ btnLogout.addEventListener("click", () => {
+  localStorage.removeItem("cb_user");
+  localStorage.removeItem("employeeName");
+  localStorage.removeItem("loginExpiry");
+  location.href = "/login/";
+});
 
   // Buttons
   btnIn.addEventListener("click", () => clock("CLOCK_IN"));
