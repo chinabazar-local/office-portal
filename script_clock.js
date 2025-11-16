@@ -8,23 +8,15 @@ const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbz94leF_gCFo-F5Etuo4sHmKwZvWGjjuWNP_ZrvycBCg24voQwDSLkU25oqffuT511LLA/exec";
 
 /** 2) Session */
-// script_clock.js
-
 let SESS = {};
 try {
-  SESS = JSON.parse(localStorage.getItem("cb_user") || "{}");
+  const raw = localStorage.getItem("cb_user");
+  SESS = raw ? JSON.parse(raw) : {};
 } catch (_) {
   SESS = {};
 }
 
-// Prefer cb_user session; fall back to old plain key
-const EMPLOYEE_NAME =
-  SESS.employeeName ||
-  SESS.name ||
-  localStorage.getItem("employeeName") ||
-  "";
-
-// Prefer cb_user JSON, but fall back to the simpler employeeName key
+// Prefer cb_user JSON, fall back to older keys if needed
 const EMPLOYEE_NAME =
   SESS.employeeName ||
   SESS.name ||
