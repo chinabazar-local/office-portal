@@ -16,11 +16,12 @@ $('#p').addEventListener('keydown', e => { if (e.key === 'Enter') onLogin(); });
  * Store session exactly how script_clock.js expects it:
  * localStorage["cb_user"] = JSON.stringify({ employeeName, createdAt, expiresAt })
  */
+
 function setSession(name, remember){
   const now = Date.now();
   const ttl = remember ? 30*24*60*60*1000 : 12*60*60*1000; // 30d or 12h
 
-  // old keys (still used by other pages)
+  // old keys, still used by other pages
   localStorage.setItem('employeeName', name);
   localStorage.setItem('loginExpiry', String(now + ttl));
 
