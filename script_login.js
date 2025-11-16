@@ -1,102 +1,92 @@
-// script_login.js
+// ==== 1) CONFIG: Timesheet Login Apps Script URL ====
+// Use the Web App URL from the *Timesheet Login* Apps Script project
+// (the one with SPREADSHEET_ID = '1xpY-_WOp_BAJhpTucnUKnK8doxsRgWgHwPPmP2HoHPw').
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz94leF_gCFo-F5Etuo4sHmKwZvWGjjuWNP_ZrvycBCg24voQwDSLkU25oqffuT511LLA/exec";
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz94leF_gCFo-F5Etuo4sHmKwZvWGjjuWNP_ZrvycBCg24voQwDSLkU25oqffuT511LLA/exec';
+const $ = (sel) => document.querySelector(sel);
 
-const $ = s => document.querySelector(s);
-
-$('#sh').addEventListener('click', () => {
-  const p = $('#p');
-  p.type = p.type === 'password' ? 'text' : 'password';
+// Show / hide password
+$("#sh")?.addEventListener("click", () => {
+  const p = $("#p");
+  if (!p) return;
+  p.type = p.type === "password" ? "text" : "password";
 });
 
-$('#loginBtn').addEventListener('click', onLogin);
-$('#p').addEventListener('keydown', e => { if (e.key === 'Enter') onLogin(); });
+// Click + Enter handlers
+$("#loginBtn")?.addEventListener("click", onLogin);
+$("#p")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") onLogin();
+});
 
-/**
- * Store session exactly how script_clock.js expects it:
- * localStorage["cb_user"] = JSON.stringify({ employeeName, createdAt, expiresAt })
- */
-
-function setSession(name, remember){
+// ==== 2) Session storage ====
+function setSession(name, username, remember) {
   const now = Date.now();
-  const ttl = remember ? 30*24*60*60*1000 : 12*60*60*1000; // 30d or 12h
+  const ttl = remember ? 30 * 24 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000; // 30d or 12h
+  const exp = now + ttl;
 
-  // old keys, still used by other pages
-  localStorage.setItem('employeeName', name);
-  localStorage.setItem('loginExpiry', String(now + ttl));
+  // Old keys (still used by leave-request wrapper)
+  localStorage.setItem("employeeName", name);
+  localStorage.setItem("loginExpiry", String(exp));
 
-  // new JSON session for script_clock.js
-  localStorage.setItem('cb_user', JSON.stringify({
-    employeeName: name,
-    exp: now + ttl
-  }));
+  // New JSON session used by script_clock.js
+  localStorage.setItem(
+    "cb_user",
+    JSON.stringify({
+      employeeName: name,
+      username,
+      exp,
+    })
+  );
 }
 
-  localStorage.setItem('cb_user', JSON.stringify(session));
-}
-
-/**
- * Login handler
- */
+// ==== 3) Login handler ====
 async function onLogin() {
-  $('#err').textContent = '';
+  const errEl = $("#err");
+  if (errEl) errEl.textContent = "";
 
-  const username = $('#u').value.trim();
-  const password = $('#p').value;
+  const btn = $("#loginBtn");
+  const username = ($("#u")?.value || "").trim();
+  const password = $("#p")?.value || "";
+  const remember = !!$("#rm")?.checked;
 
   if (!username || !password) {
-    $('#err').textContent = 'Enter username & password';
+    if (errEl) errEl.textContent = "Username and password are required";
     return;
   }
 
   try {
-    if (!APPS_SCRIPT_URL || !/^https:/.test(APPS_SCRIPT_URL)) {
-      throw new Error('APPS_SCRIPT_URL is missing or not https');
-    }
+    if (btn) btn.disabled = true;
 
     const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      // IMPORTANT: no custom headers = no preflight
-      body: JSON.stringify({ action: 'login', username, password })
+      method: "POST",
+      // no custom headers to avoid CORS preflight
+      body: JSON.stringify({ action: "login", username, password }),
     });
 
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
+      throw new Error("Network error " + res.status);
     }
 
     const json = await res.json();
 
-    // 1) Basic ok flag
+    // Timesheet Login doPost returns: { ok:true, data:{ ok:true, employeeName:'...' } }
     if (!json.ok) {
-      throw new Error(json.error || 'Login failed');
+      throw new Error(json.error || "Login failed");
+    }
+    const data = json.data || {};
+    if (!data.ok) {
+      throw new Error(data.error || "Invalid username or password");
     }
 
-    // 2) Support both shapes:
-    //    a) { ok:true, employeeName:'...' }
-    //    b) { ok:true, data:{ ok:true, employeeName:'...' } }
-    let employeeName = null;
+    const empName = (data.employeeName || "").trim() || username;
 
-    if (json.data) {
-      if (json.data.ok === false) {
-        throw new Error(json.data.error || 'Login failed');
-      }
-      employeeName = json.data.employeeName || json.data.name || null;
-    } else {
-      employeeName = json.employeeName || json.name || null;
-    }
+    // Save session and go to clock page
+    setSession(empName, username, remember);
+    location.href = "/";
 
-    if (!employeeName) {
-      // last fallback – use username as display name
-      employeeName = username;
-    }
-
-    setSession(employeeName, $('#rm').checked);
-
-    // Go to clock page (your clock HTML route)
-    // If your clock page is at "/" this is correct.
-    // If it is at "/clock/" then change this to "/clock/".
-    location.href = '/';
   } catch (err) {
-    $('#err').textContent = String(err.message || err || 'Login failed');
+    if (errEl) errEl.textContent = String(err.message || err);
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
