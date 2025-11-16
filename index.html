@@ -3,327 +3,74 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Employee Clock In/Out</title>
-
-  <!-- background + base styles -->
+  <title>Employee Clock In/Out · Chinabazar</title>
   <link rel="stylesheet" href="/style.css" />
-
-  <style>
-    /* Scope all custom styles to this page */
-    body.clock-page {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 24px 12px;
-    }
-
-    .clock-shell {
-      width: 100%;
-      max-width: 860px;
-      margin: 0 auto;
-      display: grid;
-      gap: 20px;
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    }
-
-    @media (max-width: 768px) {
-      .clock-shell {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .card {
-      background: #ffffff;
-      border-radius: 20px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.09);
-      padding: 18px 18px 20px;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 6px;
-    }
-
-    .app-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .app-title span.emoji {
-      font-size: 26px;
-    }
-
-    .app-sub {
-      font-size: 0.9rem;
-      color: #64748b;
-    }
-
-    .pill {
-      font-size: 0.78rem;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-weight: 600;
-    }
-
-    .user-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 10px 0 12px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: #f8fafc;
-    }
-
-    .user-label {
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-
-    .user-name {
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .nav-link {
-      font-size: 0.85rem;
-      color: #0f172a;
-      text-decoration: none;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid #e2e8f0;
-      background: #ffffff;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .nav-link:hover {
-      background: #f1f5f9;
-    }
-
-    .btn-ghost {
-      border: 0;
-      background: transparent;
-      color: #64748b;
-      font-size: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      padding: 4px 0;
-    }
-
-    .status-block {
-      margin-top: 4px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px dashed #e2e8f0;
-      background: #f8fafc;
-      font-size: 0.9rem;
-      display: grid;
-      gap: 4px;
-    }
-
-    #statusLine, #sinceLine, #durLine {
-      font-size: 0.9rem;
-      color: #0f172a;
-    }
-
-    #statusLine {
-      font-weight: 600;
-    }
-
-    #errorBox {
-      display: none;
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #b91c1c;
-      font-size: 0.86rem;
-    }
-
-    /* Right column: big clock + actions */
-    .clock-card {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: space-between;
-      gap: 14px;
-    }
-
-    .clock-face {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 22px 16px 18px;
-      border-radius: 20px;
-      background: radial-gradient(circle at 0 0, #eff6ff 0, #ffffff 50%, #e0f2fe 100%);
-      border: 1px solid #dbeafe;
-      box-shadow: 0 18px 40px rgba(59, 130, 246, 0.25);
-    }
-
-    .clock-label {
-      font-size: 0.86rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #1e293b;
-      opacity: 0.9;
-      margin-bottom: 8px;
-    }
-
-    #clockText {
-      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
-      font-size: clamp(2rem, 5vw, 2.6rem);
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      color: #0f172a;
-      text-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
-    }
-
-    .clock-sub {
-      margin-top: 10px;
-      font-size: 0.85rem;
-      color: #64748b;
-      text-align: center;
-    }
-
-    .actions-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .btn {
-      flex: 1 1 0;
-      border-radius: 999px;
-      padding: 11px 14px;
-      border: 0;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 0.98rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
-      transition: transform 0.06s ease-out, box-shadow 0.06s ease-out,
-                  background 0.12s ease-out, opacity 0.1s;
-    }
-    .btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #f9fafb;
-    }
-    .btn-primary[disabled] {
-      opacity: 0.6;
-      cursor: default;
-      box-shadow: none;
-    }
-
-    .btn-outline {
-      background: #ffffff;
-      color: #111827;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
-    }
-    .btn-outline[disabled] {
-      opacity: 0.6;
-      cursor: default;
-      box-shadow: none;
-    }
-
-    .foot {
-      margin-top: 6px;
-      text-align: right;
-      font-size: 0.78rem;
-      color: #9ca3af;
-    }
-  </style>
 </head>
-<body class="clock-page">
-  <div class="clock-shell">
-    <!-- LEFT: status + nav -->
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <div class="logo">CB</div>
+      <div class="brand-text">
+        <h1>Employee Portal</h1>
+        <p class="subtitle">Clock In/Out · Timesheet · Nepal (KTM)</p>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <nav class="modules">
+        <a href="/" class="chip chip-active">Clock In/Out</a>
+        <a href="/leave-request/" class="chip">Leave Request</a>
+      </nav>
+      <button id="btnLogout" type="button" class="logout-btn">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main card -->
+  <main>
     <section class="card">
-      <header class="card-header">
-        <div>
-          <div class="app-title">
-            <span class="emoji">⏱️</span>
-            <span>Employee Clock In/Out</span>
+      <!-- Dial (live clock) -->
+      <div class="dial-wrap">
+        <div class="dial">
+          <div class="dial-inner">
+            <div id="clockText" class="dial-time">--:--:--</div>
           </div>
-          <div class="app-sub">Track your work time for Chinabazar</div>
         </div>
-        <div class="pill">KTM · Nepal</div>
-      </header>
-
-      <div class="user-row">
-        <div>
-          <div class="user-label">You are signed in as</div>
-          <div class="user-name" id="signedName">—</div>
-        </div>
-        <div class="nav-links">
-          <a href="#" id="linkLeave" class="nav-link">🗓️ Leave Request</a>
-          <button id="btnLogout" class="btn-ghost" type="button">Logout ↗</button>
-        </div>
+        <div class="hint">Kathmandu time (live)</div>
       </div>
 
-      <div class="status-block">
-        <div id="statusLine">STATUS: —</div>
-        <div id="sinceLine">Since: —</div>
-        <div id="durLine">Duration: —</div>
+      <!-- Signed-in user + leave link -->
+      <div class="label">You are signed in as</div>
+      <div class="signed-row">
+        <span id="signedName" class="signed-name">—</span>
+        <a id="linkLeave" href="#" class="link-leave">🗓 Leave Request</a>
       </div>
 
+      <!-- Status lines -->
+      <div id="statusLine" class="status">STATUS: —</div>
+      <div id="sinceLine" class="status">Since: —</div>
+      <div id="durLine" class="status">Duration: —</div>
+
+      <!-- Error from script_clock.js -->
       <div id="errorBox"></div>
-    </section>
 
-    <!-- RIGHT: big clock + buttons -->
-    <section class="clock-card">
-      <div class="clock-face">
-        <div class="clock-label">Kathmandu time (live)</div>
-        <div id="clockText">--:--:--</div>
-        <div class="clock-sub">
-          Your clock events are saved with this timezone.
-        </div>
-      </div>
-
-      <div class="actions-row">
-        <button id="btnClockIn" class="btn btn-primary" type="button">
-          ⏺ Clock In
+      <!-- Buttons -->
+      <div class="btns">
+        <button id="btnClockIn" class="btn btn-in" type="button">
+          <span class="btn-ico">⏺</span> Clock In
         </button>
-        <button id="btnClockOut" class="btn btn-outline" type="button">
-          ⏹ Clock Out
+        <button id="btnClockOut" class="btn btn-out" type="button">
+          <span class="btn-ico">⏹</span> Clock Out
         </button>
       </div>
 
-      <div class="foot">
-        Powered by Google Sheets · Timesheet (KTM)
-      </div>
+      <p class="footnote">
+        Powered by Google Sheets · Timesheet · Nepal (KTM)
+      </p>
     </section>
-  </div>
+  </main>
 
   <script src="/script_clock.js"></script>
 </body>
