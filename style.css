@@ -102,3 +102,67 @@ html, body {
 /* Misc */
 .status { margin-top: 14px; color:#3f3f46; font-size: 14px; min-height: 1.2em; }
 .footnote { text-align:center; color:#8a98ab; font-size:12px; margin: 12px 0 28px; }
+
+/* Layout tweaks for header right side */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Signed-in row */
+.signed-row {
+  margin-top: 6px;
+  margin-bottom: 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px dashed var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.signed-name {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.link-leave {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0284c7;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.link-leave:hover {
+  text-decoration: underline;
+}
+
+/* Logout button in header */
+.logout-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #0f172a;
+  color: #ffffff;
+  cursor: pointer;
+}
+.logout-btn:hover {
+  background: #111827;
+}
+
+/* Error box for script_clock.js */
+#errorBox {
+  display: none;             /* script will toggle this */
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
