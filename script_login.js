@@ -1,11 +1,11 @@
 // ==== 1) CONFIG: Timesheet Login Apps Script URL ====
-// Use the Web App URL from the *Timesheet Login* Apps Script project
-// (the one with SPREADSHEET_ID = '1xpY-_WOp_BAJhpTucnUKnK8doxsRgWgHwPPmP2HoHPw').
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz94leF_gCFo-F5Etuo4sHmKwZvWGjjuWNP_ZrvycBCg24voQwDSLkU25oqffuT511LLA/exec";
+// Replace this with the Web App URL from your *Timesheet Login* Apps Script
+// (the project with SPREADSHEET_ID = '1xpY-_WOp_BAJhpTucnUKnK8doxsRgWgHwPPmP2HoHPw')
+const APPS_SCRIPT_URL = "YOUR_TIMESHEET_LOGIN_WEB_APP_URL_HERE";
 
 const $ = (sel) => document.querySelector(sel);
 
-// Show / hide password
+// Toggle password visibility
 $("#sh")?.addEventListener("click", () => {
   const p = $("#p");
   if (!p) return;
@@ -19,31 +19,35 @@ $("#p")?.addEventListener("keydown", (e) => {
 });
 
 // ==== 2) Session storage ====
-// script_login.js
-
+// Save both old keys (for leave-request) and new JSON (for clock page)
 function setSession(name, username, remember) {
   const now = Date.now();
-  const ttl = remember ? 30*24*60*60*1000 : 12*60*60*1000; // 30d or 12h
+  const ttl = remember ? 30 * 24 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000; // 30d or 12h
   const exp = now + ttl;
 
-  // Old keys
-  localStorage.setItem('employeeName', name);
-  localStorage.setItem('loginExpiry', String(exp));
+  // Old keys (used by existing code / wrappers)
+  localStorage.setItem("employeeName", name);
+  localStorage.setItem("loginExpiry", String(exp));
 
-  // New JSON session
-  localStorage.setItem('cb_user', JSON.stringify({
-    employeeName: name,
-    username,
-    exp,
-  }));
+  // New JSON session used by script_clock.js
+  localStorage.setItem(
+    "cb_user",
+    JSON.stringify({
+      employeeName: name,
+      username,
+      exp,
+    })
+  );
 }
 
-// ==== 3) Login handler ====
+// ==== 3) Login handler with loading state ====
 async function onLogin() {
   const errEl = $("#err");
   if (errEl) errEl.textContent = "";
 
   const btn = $("#loginBtn");
+  const btnText = $("#loginBtnText");
+
   const username = ($("#u")?.value || "").trim();
   const password = $("#p")?.value || "";
   const remember = !!$("#rm")?.checked;
@@ -54,7 +58,12 @@ async function onLogin() {
   }
 
   try {
-    if (btn) btn.disabled = true;
+    // Set loading state
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add("loading");
+      if (btnText) btnText.textContent = "Signing in…";
+    }
 
     const res = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
@@ -72,19 +81,26 @@ async function onLogin() {
     if (!json.ok) {
       throw new Error(json.error || "Login failed");
     }
+
     const data = json.data || {};
     if (!data.ok) {
       throw new Error(data.error || "Invalid username or password");
     }
 
-    // after receiving data from Apps Script
-const empName = (data.employeeName || "").trim() || username;
-setSession(empName, username, remember);
-location.href = "/";
+    const empName = (data.employeeName || "").trim() || username;
+
+    // Save session and go to clock page
+    setSession(empName, username, remember);
+    location.href = "/";
 
   } catch (err) {
     if (errEl) errEl.textContent = String(err.message || err);
   } finally {
-    if (btn) btn.disabled = false;
+    // Clear loading state
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove("loading");
+      if (btnText) btnText.textContent = "Login";
+    }
   }
 }
