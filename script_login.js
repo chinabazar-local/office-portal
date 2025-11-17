@@ -1,7 +1,7 @@
 // ==== 1) CONFIG: Timesheet Login Apps Script URL ====
 // Replace this with the Web App URL from your *Timesheet Login* Apps Script
 // (the project with SPREADSHEET_ID = '1xpY-_WOp_BAJhpTucnUKnK8doxsRgWgHwPPmP2HoHPw')
-const APPS_SCRIPT_URL = "YOUR_TIMESHEET_LOGIN_WEB_APP_URL_HERE";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz94leF_gCFo-F5Etuo4sHmKwZvWGjjuWNP_ZrvycBCg24voQwDSLkU25oqffuT511LLA/exec";
 
 const $ = (sel) => document.querySelector(sel);
 
