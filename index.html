@@ -5,9 +5,177 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Employee Clock In/Out · Chinabazar</title>
   <link rel="stylesheet" href="/style.css" />
+  <style>
+    /* Layout shell */
+    .main-shell{
+      max-width: 1100px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+    .clock-card{
+      border-radius: 28px;
+      padding: 26px 28px 24px;
+    }
+    @media (max-width: 768px){
+      .clock-card{
+        padding: 20px 18px;
+        border-radius: 22px;
+      }
+    }
+
+    /* Two-column layout: dial + info */
+    .clock-layout{
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.6fr);
+      gap: 28px;
+      align-items: center;
+    }
+    @media (max-width: 900px){
+      .clock-layout{
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    /* Dial overrides (make time centered, not cut off) */
+    .dial-wrap{
+      display:flex;
+      justify-content:center;
+    }
+    .dial{
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      background: radial-gradient(120% 120% at 30% 20%, #ffffff 0%, #eef7ff 70%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      border:10px solid rgba(42,130,200,.15);
+      box-shadow: inset 0 0 0 6px #ffffff, 0 8px 24px rgba(11, 45, 97, .12);
+    }
+    .dial-time{
+      font-size: clamp(30px, 5vw, 40px);
+      font-weight: 900;
+      letter-spacing: .15em;
+      line-height: 1.15;
+      color:#0f172a;
+      text-transform: uppercase;
+    }
+    .dial-sub{
+      margin-top: 10px;
+      font-size: 12px;
+      color:#6b7280;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+    }
+
+    /* Right column: info + buttons */
+    .info-block{
+      margin-bottom: 12px;
+    }
+    .info-label{
+      font-size: 13px;
+      font-weight: 600;
+      color:#64748b;
+      margin-bottom: 4px;
+    }
+    .info-value{
+      padding: 10px 12px;
+      border-radius: 14px;
+      background:#f8fafc;
+      border: 1px dashed var(--border-strong);
+      font-weight: 700;
+      color:#0f172a;
+    }
+
+    .status-lines{
+      margin-top: 10px;
+      font-size: 14px;
+      color:#111827;
+    }
+    .status-lines div + div{
+      margin-top: 4px;
+    }
+
+    #errorBox{
+      display:none;
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      color:#b91c1c;
+      background:#fef2f2;
+      border:1px solid #fecaca;
+    }
+
+    .btn-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      margin-top: 20px;
+    }
+
+    /* Reuse .btn, .btn-in, .btn-out from style.css, just make them flex-wide */
+    .btn-wide{
+      flex:1 1 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      font-size:15px;
+      letter-spacing:.25px;
+    }
+    .btn-icon-dot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.85);
+    }
+    .btn-icon-square{
+      width:10px;
+      height:10px;
+      border-radius:3px;
+      background:rgba(255,255,255,.9);
+    }
+
+    .footnote{
+      text-align:center;
+      color:#8a98ab;
+      font-size:12px;
+      margin: 14px 0 0;
+    }
+
+    /* Header top-right alignment + nav buttons same size */
+    .header-right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .modules .chip{
+      min-width: 120px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      justify-content:center;
+      font-size: 13px;
+    }
+    .logout-btn{
+      border:0;
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:12px;
+      font-weight:700;
+      background:#0f172a;
+      color:#ffffff;
+      cursor:pointer;
+    }
+    .logout-btn:hover{
+      background:#111827;
+    }
+  </style>
 </head>
 <body>
-  <!-- Header -->
+  <!-- Shared header (matches login / leave) -->
   <header class="header">
     <div class="brand">
       <div class="logo">CB</div>
@@ -16,59 +184,57 @@
         <p class="subtitle">Clock In/Out · Timesheet · Nepal (KTM)</p>
       </div>
     </div>
-
     <div class="header-right">
       <nav class="modules">
-        <a href="/" class="chip chip-active">Clock In/Out</a>
-        <a href="/leave-request/" class="chip">Leave Request</a>
+        <button class="chip chip-active" type="button">Clock In/Out</button>
+        <button class="chip" type="button" id="linkLeave">Leave Request</button>
       </nav>
-      <button id="btnLogout" type="button" class="logout-btn">
-        Logout
-      </button>
+      <button id="btnLogout" class="logout-btn" type="button">Logout</button>
     </div>
   </header>
 
-  <!-- Main card -->
-  <main>
-    <section class="card">
-      <!-- Dial (live clock) -->
-      <div class="dial-wrap">
-        <div class="dial">
-          <div class="dial-inner">
+  <main class="main-shell">
+    <section class="card clock-card">
+      <div class="clock-layout">
+        <!-- Left: dial -->
+        <div class="dial-wrap">
+          <div class="dial">
             <div id="clockText" class="dial-time">--:--:--</div>
+            <div class="dial-sub">Kathmandu time (live)</div>
           </div>
         </div>
-        <div class="hint">Kathmandu time (live)</div>
+
+        <!-- Right: user + status + buttons -->
+        <div>
+          <div class="info-block">
+            <div class="info-label">You are signed in as</div>
+            <div id="signedName" class="info-value">—</div>
+          </div>
+
+          <div class="status-lines">
+            <div id="statusLine">STATUS: —</div>
+            <div id="sinceLine">Since: —</div>
+            <div id="durLine">Duration: —</div>
+          </div>
+
+          <div id="errorBox"></div>
+
+          <div class="btn-row">
+            <button id="btnClockIn" class="btn btn-in btn-wide" type="button">
+              <span class="btn-icon-dot"></span>
+              <span>Clock In</span>
+            </button>
+            <button id="btnClockOut" class="btn btn-out btn-wide" type="button">
+              <span class="btn-icon-square"></span>
+              <span>Clock Out</span>
+            </button>
+          </div>
+
+          <p class="footnote">
+            Powered by Google Sheets · Timesheet · Nepal (KTM)
+          </p>
+        </div>
       </div>
-
-      <!-- Signed-in user + leave link -->
-      <div class="label">You are signed in as</div>
-      <div class="signed-row">
-        <span id="signedName" class="signed-name">—</span>
-        <a id="linkLeave" href="#" class="link-leave">🗓 Leave Request</a>
-      </div>
-
-      <!-- Status lines -->
-      <div id="statusLine" class="status">STATUS: —</div>
-      <div id="sinceLine" class="status">Since: —</div>
-      <div id="durLine" class="status">Duration: —</div>
-
-      <!-- Error from script_clock.js -->
-      <div id="errorBox"></div>
-
-      <!-- Buttons -->
-      <div class="btns">
-        <button id="btnClockIn" class="btn btn-in" type="button">
-          <span class="btn-ico">⏺</span> Clock In
-        </button>
-        <button id="btnClockOut" class="btn btn-out" type="button">
-          <span class="btn-ico">⏹</span> Clock Out
-        </button>
-      </div>
-
-      <p class="footnote">
-        Powered by Google Sheets · Timesheet · Nepal (KTM)
-      </p>
     </section>
   </main>
 
