@@ -2,74 +2,143 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Leave Request</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leave Request · Chinabazar</title>
   <link rel="stylesheet" href="/style.css" />
   <style>
-    .frame-wrap{border-radius:18px;overflow:hidden;border:1px solid #e6edf7;background:#fff;min-height:min(78vh,1200px)}
-    .frame{width:100%;height:calc(min(78vh,1200px));border:0;background:#fff}
-    .title-row{display:flex;align-items:baseline;gap:10px;margin:4px 4px 12px}
-    .title{margin:0;font-size:20px;font-weight:900;letter-spacing:.3px}
-    .muted{color:#64748b;font-size:12px}
+    .leave-shell{
+      max-width: 960px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+    .leave-card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(45,110,173,.08);
+    }
+    .leave-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+    .signed-pill{
+      padding:8px 12px;
+      border-radius:999px;
+      background:#f1f5f9;
+      font-size:13px;
+      color:#0f172a;
+    }
+    .signed-pill strong{
+      font-weight:700;
+    }
+    .leave-frame{
+      width:100%;
+      min-height:680px;
+      border:0;
+      border-radius:18px;
+      overflow:hidden;
+    }
+    .leave-frame::backdrop{ background:transparent; }
+    .logout-btn{
+      border:0;
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:12px;
+      font-weight:700;
+      background:#0f172a;
+      color:#fff;
+      cursor:pointer;
+    }
+    .logout-btn:hover{ background:#111827; }
+    .header-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
   </style>
 </head>
 <body>
+  <!-- Shared header -->
   <header class="header">
     <div class="brand">
-      <div class="logo">⏱</div>
+      <div class="logo">CB</div>
       <div class="brand-text">
         <h1>Employee Portal</h1>
-        <p class="subtitle">Leave Request</p>
+        <p class="subtitle">Leave requests · Kathmandu</p>
       </div>
     </div>
-    <nav class="modules">
-      <a class="chip" href="/">Clock In/Out</a>
-      <a class="chip chip-active" href="/leave-request">Leave Request</a>
-      <a class="chip" href="#" id="logoutBtn">Logout</a>
-    </nav>
+    <div class="header-right">
+      <nav class="modules">
+        <a href="/" class="chip">Clock In/Out</a>
+        <a href="/leave-request/" class="chip chip-active">Leave Request</a>
+      </nav>
+      <button id="btnLogout" class="logout-btn" type="button">Logout</button>
+    </div>
   </header>
 
-  <main class="card">
-    <div class="title-row">
-      <h2 class="title">Leave Request</h2>
-      <span class="muted">Kathmandu time</span>
-    </div>
+  <main class="leave-shell">
+    <section class="leave-card">
+      <div class="leave-top">
+        <div class="signed-pill">
+          Signed in as <strong id="signedName">—</strong>
+        </div>
+      </div>
 
-    <div class="frame-wrap">
-      <iframe id="gsFrame" class="frame" title="Leave Request Form"
-        src="" allow="geolocation https://script.google.com https://script.googleusercontent.com"
-        referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
-    </div>
+      <!-- Embedded Apps Script web app -->
+      <iframe
+        id="leaveFrame"
+        class="leave-frame"
+        title="Leave Request"
+        loading="lazy"
+      ></iframe>
+    </section>
   </main>
 
-  <footer class="footnote">Powered by Google Sheets · Nepal (KTM)</footer>
-
   <script>
-    const APPS_SCRIPT_FORM_URL = 'https://script.google.com/macros/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec'; // the Apps Script "Leave" /exec
-    const TZ='Asia/Kathmandu';
-    const name = localStorage.getItem('employeeName');
-    const exp  = +localStorage.getItem('loginExpiry')||0;
-    if(!name || Date.now()>exp){ location.href='/login'; }
+    const LEAVE_WEBAPP_URL =
+      "https://script.google.com/a/macros/chinabazar.com/s/AKfycbwfXrkiHZNZBeQyCFYLKPYEtXJZWls89g2sHA-7FJR54reSoMrKhrxCHn0MEdTx-kSX/exec";
 
-    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.clear(); location.href='/login'; });
+    // Read session from localStorage (set by script_login.js)
+    let SESS = {};
+    try {
+      SESS = JSON.parse(localStorage.getItem("cb_user") || "{}");
+    } catch (_) {
+      SESS = {};
+    }
 
-    // Parent geolocation fallback
-    (async () => {
-      const f = document.getElementById('gsFrame');
-      const withParams = new URL(APPS_SCRIPT_FORM_URL);
-      withParams.searchParams.set('employee', name);  // lock employee
-      try{
-        const pos = await new Promise((res,rej)=>{
-          if(!navigator.geolocation) return rej();
-          navigator.geolocation.getCurrentPosition(
-            p=>res(p.coords), rej, {enableHighAccuracy:true, timeout:7000}
-          );
-        });
-        withParams.searchParams.set('pf_lat', pos.latitude.toFixed(6));
-        withParams.searchParams.set('pf_lng', pos.longitude.toFixed(6));
-      }catch(_){}
-      f.src = withParams.toString();
-    })();
+    const qs = new URLSearchParams(location.search);
+    let employeeName = SESS.employeeName || SESS.name || qs.get("employee") || "";
+
+    // If no employee, send back to login
+    if (!employeeName) {
+      location.href = "/login/";
+    }
+
+    // Show name in header
+    document.getElementById("signedName").textContent = employeeName;
+
+    // Carry pf_lat / pf_lng through if present
+    const pfLat = qs.get("pf_lat");
+    const pfLng = qs.get("pf_lng");
+
+    const params = new URLSearchParams();
+    params.set("employee", employeeName);
+    if (pfLat) params.set("pf_lat", pfLat);
+    if (pfLng) params.set("pf_lng", pfLng);
+
+    const iframeSrc = LEAVE_WEBAPP_URL + "?" + params.toString();
+    document.getElementById("leaveFrame").src = iframeSrc;
+
+    // Logout: clear session and go to login
+    document.getElementById("btnLogout").addEventListener("click", () => {
+      localStorage.removeItem("cb_user");
+      location.href = "/login/";
+    });
   </script>
 </body>
 </html>
