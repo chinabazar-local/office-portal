@@ -20,8 +20,16 @@
       padding:22px 22px 20px;
       box-shadow:0 10px 30px rgba(45,110,173,.08);
     }
-    .row{display:grid;gap:6px;margin:10px 0}
-    .row label{font-size:14px;font-weight:700;color:#1e293b}
+    .row{
+      display:grid;
+      gap:6px;
+      margin:10px 0;
+    }
+    .row label{
+      font-size:14px;
+      font-weight:700;
+      color:#1e293b;
+    }
     .input{
       width:100%;
       padding:12px 14px;
@@ -35,7 +43,9 @@
       border-color:#bfdbfe;
       box-shadow:0 0 0 3px rgba(59,130,246,.18);
     }
-    .rel{position:relative}
+    .rel{
+      position:relative;
+    }
     .toggle{
       position:absolute;
       right:12px;
@@ -63,13 +73,43 @@
       font-size:14px;
       cursor:pointer;
       box-shadow:0 10px 20px rgba(15,23,42,.18);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
     }
     .btn-primary:active{
       transform:translateY(1px);
       box-shadow:0 6px 14px rgba(15,23,42,.25);
     }
-    .muted{color:#6b7280;font-size:12px}
-    #err{margin-top:8px;color:#b91c1c}
+    .btn-primary.loading{
+      opacity:.85;
+      cursor:default;
+    }
+    .muted{
+      color:#6b7280;
+      font-size:12px;
+    }
+    #err{
+      margin-top:8px;
+      color:#b91c1c;
+    }
+
+    /* Spinner inside login button */
+    .spinner{
+      width:16px;
+      height:16px;
+      border-radius:999px;
+      border:2px solid rgba(255,255,255,.4);
+      border-top-color:#ffffff;
+      display:none;
+      animation:spin .8s linear infinite;
+    }
+    .btn-primary.loading #loginSpinner{
+      display:inline-block;
+    }
+    @keyframes spin{
+      to{ transform:rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -91,10 +131,12 @@
         <input id="u" class="input" autocomplete="username" />
       </div>
 
-      <div class="row rel">
+      <div class="row">
         <label for="p">Password</label>
-        <input id="p" class="input" type="password" autocomplete="current-password" />
-        <span id="sh" class="toggle" title="Show / hide password">👁</span>
+        <div class="rel">
+          <input id="p" class="input" type="password" autocomplete="current-password" />
+          <span id="sh" class="toggle" title="Show / hide password">👁</span>
+        </div>
       </div>
 
       <div class="actions">
@@ -102,7 +144,10 @@
           <input id="rm" type="checkbox" checked />
           Remember me (30 days)
         </label>
-        <button id="loginBtn" class="btn-primary" type="button">Login</button>
+        <button id="loginBtn" class="btn-primary" type="button">
+          <span id="loginBtnText">Login</span>
+          <span id="loginSpinner" class="spinner" aria-hidden="true"></span>
+        </button>
       </div>
 
       <div id="err" class="muted"></div>
