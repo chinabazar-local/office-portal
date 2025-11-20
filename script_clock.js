@@ -1,27 +1,17 @@
 /* ===== CLOCK PAGE SCRIPT (root /) ===== */
 
-/** 1) CONFIG: Clock + Status Apps Script URL
- *  Use the Web App URL from the *Timesheet Login* Apps Script project
- *  (the one with SPREADSHEET_ID = '1xpY-_WOp_BAJhpTucnUKnK8doxsRgWgHwPPmP2HoHPw').
- */
+/** 1) CONFIG: Clock Apps Script URL */
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbz94leF_gCFo-F5Etuo4sHmKwZvWGjjuWNP_ZrvycBCg24voQwDSLkU25oqffuT511LLA/exec";
 
 /** 2) Session */
 let SESS = {};
 try {
-  const raw = localStorage.getItem("cb_user");
-  SESS = raw ? JSON.parse(raw) : {};
+  SESS = JSON.parse(localStorage.getItem("cb_user") || "{}");
 } catch (_) {
   SESS = {};
 }
-
-// Prefer cb_user JSON, fall back to older keys if needed
-const EMPLOYEE_NAME =
-  SESS.employeeName ||
-  SESS.name ||
-  localStorage.getItem("employeeName") ||
-  "";
+const EMPLOYEE_NAME = SESS.employeeName || SESS.name || "";
 
 /** 3) DOM refs */
 const signedName = document.getElementById("signedName");
@@ -97,7 +87,7 @@ async function api(payload) {
   if (!res.ok) throw new Error("HTTP " + res.status);
   const json = await res.json();
   if (!json.ok) throw new Error(json.error || "Request failed");
-  return json.data;  // for Timesheet Login: {state,lastInISO,lastOutISO} etc.
+  return json.data;
 }
 
 /** 7) Status rendering + duration timer */
@@ -110,19 +100,20 @@ function stopDurTimer() {
 }
 
 function renderStatus(data) {
-  const state = data && data.state ? String(data.state).toUpperCase() : "—";
+  const state = data && data.state ? String(data.state).toUpperCase() : "NONE";
+  const sinceISO = (data && data.sinceISO) || null;
 
-  // Timesheet Login getStatus() returns { state, lastInISO, lastOutISO }
-  let sinceISO = null;
+  let statusText;
   if (state === "IN") {
-    sinceISO = data.lastInISO || null;
+    statusText = "CLOCKED IN";
   } else if (state === "OUT") {
-    sinceISO = data.lastOutISO || null;
+    statusText = "CLOCKED OUT";
+  } else {
+    // state "NONE" or anything else → no clock events for today
+    statusText = "NOT CLOCKED TODAY";
   }
 
-  statusLine.textContent =
-    "STATUS: " +
-    (state === "IN" ? "CLOCKED IN" : state === "OUT" ? "CLOCKED OUT" : "—");
+  statusLine.textContent = "STATUS: " + statusText;
   sinceLine.textContent = "Since: " + (sinceISO ? fmtLocal(sinceISO) : "—");
 
   stopDurTimer();
@@ -241,12 +232,10 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Nav: logout
- btnLogout.addEventListener("click", () => {
-  localStorage.removeItem("cb_user");
-  localStorage.removeItem("employeeName");
-  localStorage.removeItem("loginExpiry");
-  location.href = "/login/";
-});
+  btnLogout.addEventListener("click", () => {
+    localStorage.removeItem("cb_user");
+    location.href = "/login/";
+  });
 
   // Buttons
   btnIn.addEventListener("click", () => clock("CLOCK_IN"));
@@ -254,5 +243,5 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Start UI
   startClock();   // live time
-  loadStatus();   // talks to Apps Script
+  loadStatus();   // API status
 });
