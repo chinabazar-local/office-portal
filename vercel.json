@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/new-login",
+      "destination": "https://script.google.com/macros/s/AKfycby120LyDy_mEw6Tse26OE6EgeIpxftjLkzUbHet2jy8ZWO33uuMZ-jkpgxIE-PaoJG7/exec",
+      "permanent": false
+    }
+  ]
+}
